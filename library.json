@@ -1,0 +1,29 @@
+{
+    "name": "Quest_BitBuffer",
+    "version": "0.0.1",
+    "keywords": [
+        "quest",
+        "BitBuffer"
+    ],
+    "description": "[EXPERIMENTAL] Quest Game BitBuffer Library.",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "atmelsam"
+    ],
+    "authors": [
+        {
+            "email": "aaron@mindwidgets.com",
+            "url": "https://github.com/aaronsilinskas/Quest_BitBuffer",
+            "maintainer": true,
+            "name": "Aaron Silinskas"
+        }
+    ],
+    "export": {
+        "include": [
+            "src"
+        ],
+        "exclude": null
+    }
+}
