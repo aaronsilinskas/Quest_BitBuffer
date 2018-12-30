@@ -1,15 +1,15 @@
-/* Quest_IR_BitReader.h Quest IR Bit Reader Library
+/* Quest_BitReader.h Quest Bit Reader Library
  * Reads one or more bits from a byte buffer.
  */
-#ifndef quest_ir_bitreader_h
-#define quest_ir_bitreader_h
+#ifndef quest_bitreader_h
+#define quest_bitreader_h
 
-#include "Quest_IR_BitBuffer.h"
+#include "Quest_BitBuffer.h"
 
-class Quest_IR_BitReader
+class Quest_BitReader
 {
 public:
-  Quest_IR_BitReader(uint8_t *buffer, uint8_t bufferLength);
+  Quest_BitReader(uint8_t *buffer, uint8_t bufferLength);
 
   uint16_t bitCount;
   uint16_t bitPosition;

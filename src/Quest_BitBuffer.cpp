@@ -1,4 +1,4 @@
-#include "Quest_IR_BitBuffer.h"
+#include "Quest_BitBuffer.h"
 
 void printBinaryArray(uint8_t *buffer, uint16_t length)
 {

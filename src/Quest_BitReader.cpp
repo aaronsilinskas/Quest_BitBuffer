@@ -1,6 +1,6 @@
-#include "Quest_IR_BitReader.h"
+#include "Quest_BitReader.h"
 
-Quest_IR_BitReader::Quest_IR_BitReader(uint8_t *buffer, uint8_t bufferLength)
+Quest_BitReader::Quest_BitReader(uint8_t *buffer, uint8_t bufferLength)
 {
     this->buffer = buffer;
     this->bufferLength = bufferLength;
@@ -8,21 +8,21 @@ Quest_IR_BitReader::Quest_IR_BitReader(uint8_t *buffer, uint8_t bufferLength)
     reset(0);
 }
 
-void Quest_IR_BitReader::reset(uint16_t bitsAvailable)
+void Quest_BitReader::reset(uint16_t bitsAvailable)
 {
     // bits available should never exceed buffer size
     bitCount = min(bitsAvailable, bufferLength * 8);
     bitPosition = 0;
     bufferPosition = 0;
-    bitMask = QIR_FIRST_BIT;
+    bitMask = QBB_FIRST_BIT;
 }
 
-uint16_t Quest_IR_BitReader::bitsRemaining()
+uint16_t Quest_BitReader::bitsRemaining()
 {
     return bitCount - bitPosition;
 }
 
-bool Quest_IR_BitReader::readBit()
+bool Quest_BitReader::readBit()
 {
     if (bitPosition >= bitCount)
     {
@@ -36,14 +36,14 @@ bool Quest_IR_BitReader::readBit()
     {
         // no more bits in the current byte, move to the next
         bufferPosition++;
-        bitMask = QIR_FIRST_BIT;
+        bitMask = QBB_FIRST_BIT;
     }
     bitPosition++;
 
     return bit;
 }
 
-uint32_t Quest_IR_BitReader::readBits(uint8_t bitsToRead)
+uint32_t Quest_BitReader::readBits(uint8_t bitsToRead)
 {
     if (bitPosition >= bitCount)
     {
@@ -76,7 +76,7 @@ uint32_t Quest_IR_BitReader::readBits(uint8_t bitsToRead)
             // the current buffer has been read, move to the next
             bufferPosition++;
             bufferByte = buffer[bufferPosition];
-            bitMask = QIR_FIRST_BIT;
+            bitMask = QBB_FIRST_BIT;
         }
     }
 
