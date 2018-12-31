@@ -19,6 +19,7 @@ public:
 
   bool writeBit(bool bit);
   bool writeBits(uint32_t bits, uint8_t bitsToWrite);
+  bool writeBuffer(uint8_t *buffer, uint16_t bitsToWrite);
 
 private:
   uint8_t *buffer;
