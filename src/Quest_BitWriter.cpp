@@ -60,7 +60,7 @@ bool Quest_BitWriter::writeBits(uint32_t bits, uint8_t bitsToWrite)
     return true;
 }
 
-bool Quest_BitWriter::writeBuffer(uint8_t *buffer, uint16_t bitsToWrite)
+bool Quest_BitWriter::writeBuffer(uint8_t *sourceBuffer, uint16_t bitsToWrite)
 {
     // make sure there is enough room in the buffer
     if (bitsToWrite > bitsRemaining())
@@ -68,20 +68,19 @@ bool Quest_BitWriter::writeBuffer(uint8_t *buffer, uint16_t bitsToWrite)
         return false;
     }
 
-    uint8_t bits = buffer[bufferPosition];
-    uint8_t bitMask = QBB_FIRST_BIT;
+    uint8_t sourceBits = sourceBuffer[0];
+    uint8_t sourceBitMask = QBB_FIRST_BIT;
 
     // write each bit
     for (uint16_t bitPosition = 0; bitPosition < bitsToWrite; bitPosition++)
     {
-        writeBitInternal(bits & bitMask);
+        writeBitInternal(sourceBits & sourceBitMask);
 
-        bitMask >>= 1;
-        if (bitMask == 0)
+        sourceBitMask >>= 1;
+        if (sourceBitMask == 0)
         {
-            bufferPosition++;
-            bits = buffer[bitPosition >> 3];
-            bitMask = QBB_FIRST_BIT;
+            sourceBits = sourceBuffer[bitPosition >> 3];
+            sourceBitMask = QBB_FIRST_BIT;
         }
     }
 
