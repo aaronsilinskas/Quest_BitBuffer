@@ -5,7 +5,7 @@ Quest_BitReader::Quest_BitReader(uint8_t *buffer, uint8_t bufferLength)
     this->buffer = buffer;
     this->bufferLength = bufferLength;
 
-    reset(0);
+    reset(bufferLength * 8);
 }
 
 void Quest_BitReader::reset(uint16_t bitsAvailable)
