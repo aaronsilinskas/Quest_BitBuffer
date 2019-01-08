@@ -110,6 +110,15 @@ void test_buffer_reset_multiple_times()
     TEST_ASSERT_EQUAL(0, br.bitsRemaining());
 }
 
+void test_zero_returned_for_bits_read_past_available()
+{
+    Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
+    buffer[0] = 0b10101010;
+    br.reset(4); // buffer has more data, but only make 4 bits available
+    TEST_ASSERT_EQUAL(0b1010, br.readBits(8));
+    TEST_ASSERT_EQUAL(0, br.bitsRemaining());
+}
+
 void setup()
 {
     delay(4000);
@@ -124,6 +133,7 @@ void setup()
     RUN_TEST(test_reading_multiple_bits);
     RUN_TEST(test_bits_remaining);
     RUN_TEST(test_buffer_reset_multiple_times);
+    RUN_TEST(test_zero_returned_for_bits_read_past_available);
 
     UNITY_END();
 }
