@@ -70,7 +70,7 @@ void test_writing_bits_from_another_buffer()
     uint8_t anotherBuffer[BUFFER_SIZE];
     for (uint16_t i = 0; i < BUFFER_SIZE; i++)
     {
-        anotherBuffer[i] = 0b11001100;
+        anotherBuffer[i] = (i << 4) | i;
     }
 
     Quest_BitWriter bw = Quest_BitWriter(buffer, BUFFER_SIZE);
@@ -87,7 +87,7 @@ void test_writing_bits_from_another_buffer()
     // amount of bits that were copied
     for (uint16_t i = 0; i < bitsToWrite / 8; i++)
     {
-        TEST_ASSERT_EQUAL(0b11001100, buffer[i]);
+        TEST_ASSERT_EQUAL((i << 4) | i, buffer[i]);
     }
     for (uint16_t i = bitsToWrite / 8; i < BUFFER_SIZE; i++)
     {

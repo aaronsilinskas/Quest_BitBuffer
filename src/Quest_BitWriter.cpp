@@ -69,17 +69,19 @@ bool Quest_BitWriter::writeBuffer(uint8_t *sourceBuffer, uint16_t bitsToWrite)
     }
 
     uint8_t sourceBits = sourceBuffer[0];
+    uint8_t sourceBufferPosition = 0;
     uint8_t sourceBitMask = QBB_FIRST_BIT;
 
     // write each bit
-    for (uint16_t bitPosition = 0; bitPosition < bitsToWrite; bitPosition++)
+    for (uint16_t i = 0; i < bitsToWrite; i++)
     {
         writeBitInternal(sourceBits & sourceBitMask);
 
         sourceBitMask >>= 1;
         if (sourceBitMask == 0)
         {
-            sourceBits = sourceBuffer[bitPosition >> 3];
+            sourceBufferPosition++;
+            sourceBits = sourceBuffer[sourceBufferPosition];
             sourceBitMask = QBB_FIRST_BIT;
         }
     }
