@@ -66,11 +66,14 @@ void test_writing_multiple_bits()
 
 void test_writing_bits_from_another_buffer()
 {
+    // clear the test buffer, we're going to check it for 0's later
+    memset(buffer, 0, BUFFER_SIZE);
+
     // create another buffer and fill it with non-zero values
     uint8_t anotherBuffer[BUFFER_SIZE];
     for (uint16_t i = 0; i < BUFFER_SIZE; i++)
     {
-        anotherBuffer[i] = (i << 4) | i;
+        anotherBuffer[i] = random(256);
     }
 
     Quest_BitWriter bw = Quest_BitWriter(buffer, BUFFER_SIZE);
@@ -85,10 +88,8 @@ void test_writing_bits_from_another_buffer()
 
     // make sure the bit writer's buffer reflects the other buffer, but only to the
     // amount of bits that were copied
-    for (uint16_t i = 0; i < bitsToWrite / 8; i++)
-    {
-        TEST_ASSERT_EQUAL((i << 4) | i, buffer[i]);
-    }
+    TEST_ASSERT_EQUAL_INT8_ARRAY(anotherBuffer, buffer, bitsToWrite / 8);
+
     for (uint16_t i = bitsToWrite / 8; i < BUFFER_SIZE; i++)
     {
         TEST_ASSERT_EQUAL(0, buffer[i]);
@@ -106,40 +107,49 @@ void test_bits_remaining()
     TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS - 11, bw.bitsRemaining());
 }
 
-void test_reset_fills_buffer_with_zeroes()
+void test_reset_to_start_of_buffer()
+{
+    // a new bit writer should be reset
+    Quest_BitWriter bw = Quest_BitWriter(buffer, BUFFER_SIZE);
+    TEST_ASSERT_EQUAL(0, bw.bitPosition);
+    TEST_ASSERT_EQUAL(0, bw.bitsWritten());
+    TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS, bw.bitsRemaining());
+
+    // write some data to the buffer
+    uint8_t testValue = random(256);
+    for (uint16_t i = 0; i < BUFFER_SIZE / 2; i++)
+    {
+        bw.writeBits(testValue, 8);
+    }
+
+    // reset the buffer
+    bw.reset();
+
+    TEST_ASSERT_EQUAL(0, bw.bitPosition);
+    TEST_ASSERT_EQUAL(0, bw.bitsWritten());
+    TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS, bw.bitsRemaining());
+}
+
+void test_reset_does_not_change_buffer()
 {
     // fill the buffer with non-zero values
+    uint8_t testValue = random(255) + 1;
     for (uint16_t i = 0; i < BUFFER_SIZE; i++)
     {
-        buffer[i] = 0b11110000;
+        buffer[i] = testValue;
     }
 
     // constructing the bit writer resets the buffer
     Quest_BitWriter bw = Quest_BitWriter(buffer, BUFFER_SIZE);
 
-    // the buffer should be zero'd out
-    for (uint16_t i = 0; i < BUFFER_SIZE; i++)
-    {
-        TEST_ASSERT_EQUAL(0, buffer[i]);
-    }
+    // the buffer should not be touched
+    TEST_ASSERT_EACH_EQUAL_INT8(testValue, buffer, BUFFER_SIZE);
 
-    // fill the buffer with non-zero values using the bit writer
-    for (uint16_t i = 0; i < BUFFER_SIZE; i++)
-    {
-        bw.writeBits(0b01010101, 8);
-    }
-
-    // reset the buffer again
+    // reset the buffer
     bw.reset();
-    TEST_ASSERT_EQUAL(0, bw.bitPosition);
-    TEST_ASSERT_EQUAL(0, bw.bitsWritten());
-    TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS, bw.bitsRemaining());
 
-    // the buffer should be zero'd out again
-    for (uint16_t i = 0; i < BUFFER_SIZE; i++)
-    {
-        TEST_ASSERT_EQUAL(0, buffer[i]);
-    }
+    // the buffer should not be touched
+    TEST_ASSERT_EACH_EQUAL_INT8(testValue, buffer, BUFFER_SIZE);
 }
 
 void setup()
@@ -153,7 +163,8 @@ void setup()
     RUN_TEST(test_writing_multiple_bits);
     RUN_TEST(test_writing_bits_from_another_buffer);
     RUN_TEST(test_bits_remaining);
-    RUN_TEST(test_reset_fills_buffer_with_zeroes);
+    RUN_TEST(test_reset_to_start_of_buffer);
+    RUN_TEST(test_reset_does_not_change_buffer);
 
     UNITY_END();
 }

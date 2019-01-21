@@ -13,7 +13,6 @@ void Quest_BitWriter::reset()
     bitPosition = 0;
     bufferPosition = 0;
     bitMask = QBB_FIRST_BIT;
-    memset(buffer, 0, bufferLength);
 }
 
 uint16_t Quest_BitWriter::bitsWritten()
@@ -91,10 +90,26 @@ bool Quest_BitWriter::writeBuffer(uint8_t *sourceBuffer, uint16_t bitsToWrite)
 
 inline void Quest_BitWriter::writeBitInternal(bool bit)
 {
-    // update the bit in the buffer, assume buffer is all 0's so only need to write 1's
-    if (bit)
+    // if we're writing the top bit, we need clear the remaining 7 bits
+    if (bitMask == QBB_FIRST_BIT)
     {
-        buffer[bufferPosition] = buffer[bufferPosition] | bitMask;
+        if (bit)
+        {
+            buffer[bufferPosition] = bitMask;
+        }
+        else
+        {
+            buffer[bufferPosition] = 0;
+        }
+    }
+    else
+    {
+        // update the bit in the buffer, we only need to write 1's because we reset all values
+        // to 0 when setting the top bit
+        if (bit)
+        {
+            buffer[bufferPosition] = buffer[bufferPosition] | bitMask;
+        }
     }
 
     bitMask >>= 1;
