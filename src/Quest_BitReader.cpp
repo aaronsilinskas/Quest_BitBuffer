@@ -86,3 +86,62 @@ uint32_t Quest_BitReader::readBits(uint8_t bitsToRead)
 
     return readBits;
 }
+
+uint16_t Quest_BitReader::readBuffer(uint8_t *destinationBuffer, uint16_t bitsToRead)
+{
+    if (bitPosition >= bitCount)
+    {
+        // already read all available bits
+        return 0;
+    }
+
+    // do not read more bits than available
+    if (bitPosition + bitsToRead > bitCount)
+    {
+        bitsToRead = bitCount - bitPosition;
+    }
+
+    uint8_t readBits = 0;
+    uint8_t bufferByte = buffer[bufferPosition];
+    uint8_t destinationBitPosition = 0;
+    uint16_t destinationPosition = 0;
+
+    for (uint16_t i = 0; i < bitsToRead; i++)
+    {
+        // shift the read bits, and set the next bit from the buffer
+        readBits <<= 1;
+        if (bufferByte & bitMask)
+        {
+            readBits |= 1;
+        }
+
+        // move to the next bit in the buffer
+        bitMask >>= 1;
+        if (bitMask == 0)
+        {
+            // the current buffer has been read, move to the next
+            bufferPosition++;
+            bufferByte = buffer[bufferPosition];
+            bitMask = QBB_FIRST_BIT;
+        }
+
+        // update the position state and the destination buffer
+        destinationBitPosition++;
+        if (destinationBitPosition == 8)
+        {
+            destinationBitPosition = 0;
+            destinationBuffer[destinationPosition] = readBits;
+            destinationPosition++;
+            readBits = 0;
+        }
+    }
+
+    // make sure any bits beyond the byte boundary are stored
+    readBits <<= (8 - destinationBitPosition);
+    destinationBuffer[destinationPosition] = readBits;
+
+    // update the read position
+    bitPosition += bitsToRead;
+
+    return bitsToRead;
+}

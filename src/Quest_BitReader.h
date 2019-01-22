@@ -19,6 +19,7 @@ public:
 
   bool readBit();
   uint32_t readBits(uint8_t bitsToRead);
+  uint16_t readBuffer(uint8_t *destinationBuffer, uint16_t bitsToRead);
 
 private:
   uint8_t *buffer;
