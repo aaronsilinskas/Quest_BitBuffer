@@ -16,6 +16,6 @@
 #define QBB_FIRST_BIT 0b10000000
 #define QBB_FIRST_BIT_OF_INT 0x80000000
 
-void printBinaryArray(uint8_t *buffer, uint16_t length);
+void printBinaryArray(uint8_t *buffer, uint16_t length, const String &byteDelimiter);
 
 #endif
