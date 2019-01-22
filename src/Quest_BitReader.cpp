@@ -101,6 +101,12 @@ uint16_t Quest_BitReader::readBuffer(uint8_t *destinationBuffer, uint16_t bitsTo
         bitsToRead = bitCount - bitPosition;
     }
 
+    // if the read is byte-aligned, can copy much faster
+    if (bitMask == QBB_FIRST_BIT)
+    {
+        return fastReadBuffer(destinationBuffer, bitsToRead);
+    }
+
     uint8_t readBits = 0;
     uint8_t bufferByte = buffer[bufferPosition];
     uint8_t destinationBitPosition = 0;
@@ -137,11 +143,33 @@ uint16_t Quest_BitReader::readBuffer(uint8_t *destinationBuffer, uint16_t bitsTo
     }
 
     // make sure any bits beyond the byte boundary are stored
-    readBits <<= (8 - destinationBitPosition);
-    destinationBuffer[destinationPosition] = readBits;
+    uint8_t bitsNotInDestination = destinationBitPosition & 0b111;
+    if (bitsNotInDestination > 0)
+    {
+        readBits <<= (8 - bitsNotInDestination);
+        destinationBuffer[destinationPosition] = readBits;
+    }
 
     // update the read position
     bitPosition += bitsToRead;
 
+    return bitsToRead;
+}
+
+uint16_t Quest_BitReader::fastReadBuffer(uint8_t *destinationBuffer, uint16_t bitsToRead)
+{
+    uint16_t bytesToRead = bitsToRead >> 3;
+    memcpy(destinationBuffer, &buffer[bufferPosition], bytesToRead);
+
+    bufferPosition += bytesToRead;
+
+    uint8_t bitsLeftToRead = bitsToRead & 0b111;
+    if (bitsLeftToRead > 0)
+    {
+        uint8_t bitMask = 0b11111111 << (8 - bitsLeftToRead);
+        destinationBuffer[bytesToRead] = buffer[bufferPosition] & bitMask;
+    }
+
+    bitPosition += bitsToRead;
     return bitsToRead;
 }

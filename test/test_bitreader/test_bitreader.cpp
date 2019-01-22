@@ -94,12 +94,19 @@ void test_reading_to_buffer_byte_aligned()
     randomizeBuffer();
 
     Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
-    uint16_t bitsToRead = BUFFER_SIZE_IN_BITS / 16;
+    uint16_t bitsToRead = (BUFFER_SIZE_IN_BITS / 4) + 5;
 
     uint16_t bitsRead = br.readBuffer(readBuffer, bitsToRead);
 
     TEST_ASSERT_EQUAL(bitsToRead, bitsRead);
-    TEST_ASSERT_EQUAL_INT8_ARRAY(buffer, readBuffer, bitsToRead / 8);
+    TEST_ASSERT_EQUAL(bitsToRead, br.bitPosition);
+    TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS - bitsToRead, br.bitsRemaining());
+
+    // compare bytes read
+    uint16_t bytesToRead = bitsToRead / 8;
+    TEST_ASSERT_EQUAL_INT8_ARRAY(buffer, readBuffer, bytesToRead);
+    // compare the extra bits read
+    TEST_ASSERT_EQUAL(buffer[bytesToRead] & 0b11111000, readBuffer[bytesToRead]);
 }
 
 void test_reading_to_buffer_byte_unaligned()
@@ -112,15 +119,52 @@ void test_reading_to_buffer_byte_unaligned()
     br.readBits(3);
 
     // read to a buffer
-    uint16_t bitsToRead = BUFFER_SIZE_IN_BITS / 4;
+    uint16_t bitsToRead = (BUFFER_SIZE_IN_BITS / 4) + 3;
     uint16_t bitsRead = br.readBuffer(readBuffer, bitsToRead);
 
     TEST_ASSERT_EQUAL(bitsToRead, bitsRead);
-    for (uint16_t i = 0; i < bitsToRead / 8; i++)
+    TEST_ASSERT_EQUAL(bitsToRead + 3, br.bitPosition);
+    TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS - 3 - bitsToRead, br.bitsRemaining());
+
+    // compare bytes read
+    uint16_t bytesToRead = bitsToRead / 8;
+    for (uint16_t i = 0; i < bytesToRead; i++)
     {
         uint8_t expected = (buffer[i] << 3) | (buffer[i + 1] >> 5);
         TEST_ASSERT_EQUAL(expected, readBuffer[i]);
     }
+    // compare the extra bits read
+    uint8_t lastBitsExpected = buffer[bytesToRead] << 3;
+    TEST_ASSERT_EQUAL(lastBitsExpected, readBuffer[bytesToRead]);
+}
+
+uint64_t timeReadBuffer(Quest_BitReader *br)
+{
+    uint64_t timer = micros();
+    br->readBuffer(readBuffer, BUFFER_SIZE_IN_BITS);
+    return micros() - timer;
+}
+
+void test_reading_buffer_is_faster_aligned()
+{
+    Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
+    randomizeBuffer();
+
+    uint64_t alignedReadTimes = 0;
+    uint64_t unalignedReadTimes = 0;
+    for (uint8_t i = 0; i < 100; i++)
+    {
+        br.reset(BUFFER_SIZE_IN_BITS);
+        alignedReadTimes += timeReadBuffer(&br);
+
+        br.reset(BUFFER_SIZE_IN_BITS);
+        br.readBits(5); // unalign buffer read
+        unalignedReadTimes += timeReadBuffer(&br);
+    }
+
+    // aligned read should be at least 10 times faster
+    uint64_t readTimeRatio = unalignedReadTimes / alignedReadTimes;
+    TEST_ASSERT_GREATER_OR_EQUAL(10, readTimeRatio);
 }
 
 void test_reading_state()
@@ -204,6 +248,7 @@ void setup()
     RUN_TEST(test_reading_multiple_bits);
     RUN_TEST(test_reading_to_buffer_byte_aligned);
     RUN_TEST(test_reading_to_buffer_byte_unaligned);
+    RUN_TEST(test_reading_buffer_is_faster_aligned);
     RUN_TEST(test_reading_state);
     RUN_TEST(test_buffer_reset_multiple_times);
     RUN_TEST(test_zero_returned_for_bits_read_past_available);

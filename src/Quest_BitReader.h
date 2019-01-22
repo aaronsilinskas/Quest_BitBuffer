@@ -26,6 +26,8 @@ private:
   uint8_t bufferLength;
   uint8_t bufferPosition;
   uint8_t bitMask;
+
+  uint16_t fastReadBuffer(uint8_t *destinationBuffer, uint16_t bitsToRead);
 };
 
 #endif
