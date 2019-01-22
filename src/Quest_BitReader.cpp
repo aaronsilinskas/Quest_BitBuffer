@@ -8,13 +8,15 @@ Quest_BitReader::Quest_BitReader(uint8_t *buffer, uint8_t bufferLength)
     reset(bufferLength * 8);
 }
 
-void Quest_BitReader::reset(uint16_t bitsAvailable)
+bool Quest_BitReader::reset(uint16_t bitsAvailable)
 {
     // bits available should never exceed buffer size
     bitCount = min(bitsAvailable, bufferLength * 8);
     bitPosition = 0;
     bufferPosition = 0;
     bitMask = QBB_FIRST_BIT;
+
+    return bitCount == bitsAvailable;
 }
 
 uint16_t Quest_BitReader::bitsRemaining()

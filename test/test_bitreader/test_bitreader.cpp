@@ -20,8 +20,9 @@ void test_reset_to_less_than_buffer_size()
 {
     Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
     uint16_t smallerSize = BUFFER_SIZE_IN_BITS / 3;
-    br.reset(smallerSize);
+    bool result = br.reset(smallerSize);
 
+    TEST_ASSERT_TRUE(result);
     TEST_ASSERT_EQUAL(smallerSize, br.bitCount);
     TEST_ASSERT_EQUAL(0, br.bitPosition);
     TEST_ASSERT_EQUAL(smallerSize, br.bitsRemaining());
@@ -30,8 +31,9 @@ void test_reset_to_less_than_buffer_size()
 void test_reset_to_zero_bits_is_ok()
 {
     Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
-    br.reset(0);
+    bool result = br.reset(0);
 
+    TEST_ASSERT_TRUE(result);
     TEST_ASSERT_EQUAL(0, br.bitCount);
     TEST_ASSERT_EQUAL(0, br.bitPosition);
     TEST_ASSERT_EQUAL(0, br.bitsRemaining());
@@ -41,8 +43,9 @@ void test_reset_more_than_buffer_size_is_max_buffer_size()
 {
     Quest_BitReader br = Quest_BitReader(buffer, BUFFER_SIZE);
     uint16_t largerSize = BUFFER_SIZE_IN_BITS * 3;
-    br.reset(largerSize);
+    bool result = br.reset(largerSize);
 
+    TEST_ASSERT_FALSE(result);
     TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS, br.bitCount);
     TEST_ASSERT_EQUAL(0, br.bitPosition);
     TEST_ASSERT_EQUAL(BUFFER_SIZE_IN_BITS, br.bitsRemaining());

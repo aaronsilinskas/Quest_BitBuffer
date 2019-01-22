@@ -14,7 +14,7 @@ public:
   uint16_t bitCount;
   uint16_t bitPosition;
 
-  void reset(uint16_t bitsAvailable);
+  bool reset(uint16_t bitsAvailable);
   uint16_t bitsRemaining();
 
   bool readBit();
